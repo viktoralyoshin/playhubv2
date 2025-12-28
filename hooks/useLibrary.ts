@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { libraryService } from "@/services/library.service";
 import { GameStatus } from "@/types/library.types";
-import { toast } from "sonner"; // или любая твоя либа для уведомлений
+import { toast } from "sonner";
 
 export const useUserLibrary = (page: number = 1, limit: number = 10) => {
     return useQuery({
@@ -25,7 +25,6 @@ export const useUpdateLibraryStatus = () => {
             libraryService.updateStatus(gameId, status),
 
         onSuccess: () => {
-            // Инвалидируем списки и статы, чтобы данные обновились везде
             queryClient.invalidateQueries({ queryKey: ["user-library"] });
             queryClient.invalidateQueries({ queryKey: ["library-stats"] });
             toast.success("Статус игры обновлен");

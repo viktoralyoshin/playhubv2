@@ -1,4 +1,3 @@
-// components/profile/library-game-card.tsx
 import React from "react"
 import Link from "next/link"
 import { useGameById } from "@/hooks/useGame"
@@ -13,7 +12,6 @@ interface LibraryGameCardProps {
 }
 
 export function LibraryGameCard({ entry, statusDetails }: LibraryGameCardProps) {
-    // Используем твой хук для получения данных игры
     const { data: game, isLoading } = useGameById(entry.game_id)
 
     if (isLoading) {
