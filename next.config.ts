@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "i.pinimg.com" },
-      { protocol: "https", hostname: "assetsio.gnwcdn.com" },
+      { protocol: "https", hostname: "api.dicebear.com" },
       { protocol: "https", hostname: "static0.polygonimages.com" },
       { protocol: "https", hostname: "image.api.playstation.com" },
       { protocol: "https", hostname: "upload.wikimedia.org" },
@@ -23,6 +23,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "cdn2.unrealengine.com" },
       { protocol: "https", hostname: "static.cdprojektred.com" },
       { protocol: "https", hostname: "images.nvidia.com" },
+      { protocol: "https", hostname: "assets-prd.ignimgs.com" },
+      { protocol: "https", hostname: "images.stopgame.ru" },
+      { protocol: "https", hostname: "images.igdb.com" },
     ],
   },
 };

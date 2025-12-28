@@ -1,76 +1,66 @@
-"use client"
-
 import React from "react"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Globe } from "lucide-react"
-import { motion } from "framer-motion"
+import { Calendar, Monitor, Star } from "lucide-react"
+import { IGame } from "@/types/game.types"
 
-interface GameHeroProps {
-    game: {
-        title: string
-        background: string
-        cover: string
-        genres: string[]
-        releaseDate: string
-        dev: string
-    }
-}
+export function GameHero({ game }: { game: IGame }) {
+    const background = game.screenshots?.[0] || game.artwork_urls?.[0] || game.cover_url
 
-export function GameHero({ game }: GameHeroProps) {
     return (
-        <div className="relative h-[60vh] w-full overflow-hidden">
-            <Image
-                src={game.background}
-                alt="Background"
-                fill
-                className="object-cover opacity-60"
-                priority
-            />
-            {/* Градиент */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
+        <section className="relative h-[70vh] w-full overflow-hidden">
+            <div className="absolute inset-0 z-0">
+                {background && (
+                    <Image
+                        src={background}
+                        alt={game.name}
+                        fill
+                        priority
+                        className="object-cover opacity-40 blur-[2px]"
+                    />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
+            </div>
 
-            <div className="absolute bottom-0 w-full pb-10">
-                <div className="container mx-auto px-4 flex items-end gap-8">
-
-                    {/* Обложка (Box Art) */}
-                    <motion.div
-                        initial={{ y: 50, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                        className="hidden lg:block relative w-52 h-72 rounded-xl overflow-hidden shadow-2xl border-2 border-white/10 flex-shrink-0 -mb-24 z-10"
-                    >
-                        <Image src={game.cover} alt="Cover" fill className="object-cover" />
-                    </motion.div>
-
-                    {/* Информация */}
-                    <motion.div
-                        className="mb-4 w-full"
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        <div className="flex gap-2 mb-4">
-                            {game.genres.map((g) => (
-                                <Badge key={g} variant="secondary" className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border-0">
-                                    {g}
+            <div className="container relative z-10 mx-auto h-full px-4 flex items-end pb-12">
+                <div className="flex flex-col md:flex-row gap-8 items-end w-full">
+                    <div className="relative w-48 md:w-64 aspect-[2/3] flex-shrink-0 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl hidden md:block">
+                        <Image
+                            src={game.cover_url || "/no-cover.png"}
+                            alt={game.name}
+                            fill
+                            className="object-cover"
+                        />
+                    </div>
+                    <div className="flex-grow mb-4">
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            {game.genres?.slice(0, 3).map(genre => (
+                                <Badge key={genre} className="bg-[#ff2e2e] hover:bg-[#d61e1e] border-0">
+                                    {genre}
                                 </Badge>
                             ))}
                         </div>
-                        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-4 shadow-black drop-shadow-lg">
-                            {game.title}
+                        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white mb-6">
+                            {game.name}
                         </h1>
-                        <div className="flex flex-wrap items-center gap-6 text-gray-300 font-medium text-sm md:text-base">
-                            <span className="flex items-center gap-2">
-                                <Calendar size={18} className="text-[#ff2e2e]" /> {game.releaseDate}
-                            </span>
-                            <span className="flex items-center gap-2">
-                                <Globe size={18} className="text-[#ff2e2e]" /> {game.dev}
-                            </span>
+
+                        <div className="flex flex-wrap gap-6 text-sm md:text-base font-bold text-white/80">
+                            <div className="flex items-center gap-2">
+                                <Calendar size={18} className="text-[#ff2e2e]" />
+                                {game.first_release_date || "TBA"}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Monitor size={18} className="text-[#ff2e2e]" />
+                                {game.platforms?.slice(0, 3).join(", ")}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Star size={18} className="text-yellow-500 fill-yellow-500" />
+                                {game.playhub_rating ? game.playhub_rating : "N/A"}
+                            </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
     )
 }

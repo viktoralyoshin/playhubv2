@@ -1,125 +1,139 @@
 "use client"
 
-import React, { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
+import React from "react"
+import { IGame } from "@/types/game.types"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { ReviewDialog } from "@/components/social/review-dialog"
+import { useUpdateLibraryStatus } from "@/hooks/useLibrary"
+import { GameStatus } from "@/types/library.types"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { Trophy, Star, Share2, Monitor, Gamepad2, Flag } from "lucide-react"
-import { motion } from "framer-motion"
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu"
+import { Loader2, ChevronDown, Check, Clock, PlayCircle, Trophy, Trash2, Bell } from "lucide-react"
 
-interface GameSidebarProps {
-    game: {
-        userRating: number
-        releaseDate: string
-        dev: string
-        pub: string
+export function GameSidebar({ game }: { game: IGame }) {
+    const { mutate: updateStatus, isPending } = useUpdateLibraryStatus()
+
+    const details = [
+        { label: "Платформы", value: game.platforms },
+        { label: "Жанры", value: game.genres },
+        { label: "Темы", value: game.themes },
+    ]
+
+    const isReleased = () => {
+        if (!game.first_release_date || game.first_release_date === "N/A") return false
+        const releaseDate = new Date(game.first_release_date)
+        return !isNaN(releaseDate.getTime()) && releaseDate <= new Date()
     }
-}
 
-export function GameSidebar({ game }: GameSidebarProps) {
-    const [status, setStatus] = useState("plan") // plan | playing | completed | dropped
+    const canReview = isReleased()
+
+    const statuses = [
+        { id: GameStatus.PLAYING, label: "Играю", icon: <PlayCircle size={16} />, color: "text-green-500" },
+        { id: GameStatus.PLAN, label: "В планах", icon: <Clock size={16} />, color: "text-blue-500" },
+        { id: GameStatus.COMPLETED, label: "Пройдено", icon: <Trophy size={16} />, color: "text-purple-500" },
+        { id: GameStatus.DROPPED, label: "Брошено", icon: <Trash2 size={16} />, color: "text-zinc-500" },
+    ]
+
+    const handleStatusChange = (status: GameStatus) => {
+        updateStatus({ gameId: game.id.toString(), status })
+    }
 
     return (
-        <div className="sticky top-24 space-y-6">
-            {/* 1. Блок действий */}
-            <div className="bg-[#121212] rounded-xl border border-white/10 p-6 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff2e2e]/10 blur-3xl rounded-full -z-10" />
+        <aside className="space-y-8 bg-[#121212] p-6 rounded-2xl border border-white/5 sticky top-28">
+            <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                    <div className="text-xs text-gray-500 uppercase font-bold mb-1">IGDB</div>
+                    <div className="text-2xl font-black text-white">
+                        {game.igdb_rating ? Math.round(game.igdb_rating) : "—"}
+                    </div>
+                </div>
+                <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                    <div className="text-xs text-gray-500 uppercase font-bold mb-1">PlayHub</div>
+                    <div className="text-2xl font-black text-[#ff2e2e]">
+                        {game.playhub_rating ? game.playhub_rating : "—"}
+                    </div>
+                </div>
+            </div>
 
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <div className="text-sm text-gray-400 font-medium">PlayHub Score</div>
-                        <div className="text-5xl font-black text-white flex items-start tracking-tighter">
-                            {game.userRating}
-                            <span className="text-lg text-[#ff2e2e] mt-1 ml-1 font-bold">/ 100</span>
+            <Separator className="bg-white/10" />
+            <div className="space-y-6">
+                {details.map((item) => (
+                    item.value && item.value.length > 0 && (
+                        <div key={item.label}>
+                            <h4 className="text-xs uppercase tracking-widest text-gray-500 font-black mb-3">
+                                {item.label}
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                                {item.value.map(val => (
+                                    <Badge key={val} variant="outline" className="border-white/10 text-white hover:border-[#ff2e2e] transition-colors">
+                                        {val}
+                                    </Badge>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                    <div className="h-16 w-16 rounded-2xl border border-white/10 flex items-center justify-center bg-black shadow-inner">
-                        <Trophy className="text-[#ff2e2e]" size={28} />
-                    </div>
-                </div>
+                    )
+                ))}
+            </div>
 
-                <div className="space-y-4">
-                    <Select value={status} onValueChange={setStatus}>
-                        <SelectTrigger className="w-full h-14 bg-[#ff2e2e] border-0 text-white text-lg font-bold hover:bg-[#d61e1e] transition-all focus:ring-0 shadow-lg shadow-red-900/20">
-                            <SelectValue placeholder="Статус" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
-                            <SelectItem value="plan">В планы</SelectItem>
-                            <SelectItem value="playing">Играю сейчас</SelectItem>
-                            <SelectItem value="completed">Прошел</SelectItem>
-                            <SelectItem value="dropped">Бросил</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <Button variant="outline" className="h-12 border-white/10 hover:bg-white/5 hover:text-white bg-[#0a0a0a]">
-                            <Star size={18} className="mr-2 text-yellow-500" /> Оценить
-                        </Button>
-                        <Button variant="outline" className="h-12 border-white/10 hover:bg-white/5 hover:text-white bg-[#0a0a0a]">
-                            <Share2 size={18} className="mr-2" /> Поделиться
-                        </Button>
-                    </div>
-                </div>
-
-                {status === "playing" && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        className="mt-6 pt-6 border-t border-white/10"
+            <Separator className="bg-white/10" />
+            <div className="space-y-3">
+                {isReleased() ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                disabled={isPending}
+                                className="w-full py-3 bg-white text-black font-black uppercase text-sm rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                            >
+                                {isPending ? <Loader2 className="animate-spin" size={18} /> : "В библиотеку"}
+                                <ChevronDown size={16} />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] bg-[#1a1a1a] border-white/10 text-white p-2 rounded-xl">
+                            {statuses.map((s) => (
+                                <DropdownMenuItem
+                                    key={s.id}
+                                    onClick={() => handleStatusChange(s.id)}
+                                    className="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-white/5 focus:bg-white/5 transition-colors"
+                                >
+                                    <span className={s.color}>{s.icon}</span>
+                                    <span className="font-bold text-xs uppercase tracking-wider">{s.label}</span>
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : (
+                    <button
+                        disabled={isPending}
+                        onClick={() => handleStatusChange(GameStatus.WAITING)}
+                        className="w-full py-3 bg-white text-black font-black uppercase text-sm rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
                     >
-                        <div className="flex justify-between text-sm mb-2">
-                            <span className="text-gray-400">Прогресс игры</span>
-                            <span className="text-white font-bold">42%</span>
-                        </div>
-                        <Progress value={42} className="h-2 bg-white/10" indicatorClassName="bg-[#ff2e2e]" />
-                    </motion.div>
+                        {isPending ? (
+                            <Loader2 className="animate-spin" size={18} />
+                        ) : (
+                            <>
+                                <Bell size={18} />
+                                Жду игру
+                            </>
+                        )}
+                    </button>
+                )}
+                {canReview ? (
+                    <ReviewDialog game={game}>
+                        <button className="w-full py-3 bg-[#ff2e2e] text-white font-black uppercase text-sm rounded-xl hover:bg-[#d61e1e] transition-colors shadow-[0_0_20px_rgba(255,46,46,0.3)]">
+                            Оценить игру
+                        </button>
+                    </ReviewDialog>
+                ) : (
+                    <div className="w-full py-3 bg-white/5 text-gray-500 font-black uppercase text-[10px] text-center rounded-xl border border-white/5 cursor-default">
+                        Оценка будет доступна после релиза
+                    </div>
                 )}
             </div>
-
-            {/* 2. Информация */}
-            <div className="bg-[#121212] rounded-xl border border-white/10 p-6 space-y-4">
-                <h3 className="font-bold text-white mb-2">Информация</h3>
-                <div className="flex justify-between py-2 border-b border-white/5">
-                    <span className="text-gray-500">Платформы</span>
-                    <div className="flex gap-2 text-gray-300">
-                        <Monitor size={16} />
-                        <Gamepad2 size={16} />
-                    </div>
-                </div>
-                <div className="flex justify-between py-2 border-b border-white/5">
-                    <span className="text-gray-500">Дата выхода</span>
-                    <span className="text-white text-sm">{game.releaseDate}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-white/5">
-                    <span className="text-gray-500">Разработчик</span>
-                    <span className="text-white text-sm">{game.dev}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-white/5">
-                    <span className="text-gray-500">Издатель</span>
-                    <span className="text-white text-sm">{game.pub}</span>
-                </div>
-                <Button variant="ghost" className="w-full text-xs text-gray-500 hover:text-[#ff2e2e] mt-2 h-8">
-                    <Flag size={12} className="mr-2" /> Сообщить об ошибке
-                </Button>
-            </div>
-
-            {/* 3. Магазин */}
-            <div className="bg-[#121212] rounded-xl border border-white/10 p-6">
-                <h3 className="font-bold text-white mb-4">Где купить</h3>
-                <a href="#" className="flex items-center justify-between group p-3 rounded-lg hover:bg-white/5 transition-colors">
-                    <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 bg-white rounded-sm flex items-center justify-center text-black font-bold text-xs">S</div>
-                        <span className="text-sm font-medium">Steam</span>
-                    </div>
-                    <span className="text-[#ff2e2e] font-bold text-sm group-hover:underline">19.99$</span>
-                </a>
-            </div>
-        </div>
+        </aside>
     )
 }

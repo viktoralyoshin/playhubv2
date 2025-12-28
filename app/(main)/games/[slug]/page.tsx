@@ -1,47 +1,56 @@
 "use client"
 
 import React from "react"
+import { useParams } from "next/navigation"
 import { GameHero } from "@/components/game/game-hero"
 import { GameContent } from "@/components/game/game-content"
 import { GameSidebar } from "@/components/game/game-sidebar"
+import { Loader2, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { useGameBySlug } from "@/hooks/useGame"
 
-// MOCK DATA (Имитация ответа от API)
-// В реальном приложении данные будут приходить из функции fetchGame(params.slug)
-const gameData = {
-    title: "Cyberpunk 2077: Phantom Liberty",
-    dev: "CD Projekt RED",
-    pub: "CD Projekt",
-    releaseDate: "26 сен. 2023",
-    platforms: ["PC", "PS5", "Xbox Series X"],
-    genres: ["RPG", "Action", "Cyberpunk", "Open World"],
-    rating: 89,
-    userRating: 92,
-    desc: "Phantom Liberty — это сюжетное дополнение в жанре шпионского триллера для Cyberpunk 2077. Вернитесь в роль кибернаемника Ви и станьте шпионом НСША, чтобы спасти саму главу государства. Найдите союзников в Песьем городе, самом опасном районе Найт-Сити, чтобы распутать клубок шпионских и политических интриг.",
-    background: "https://images.nvidia.com/aem-dam/Solutions/geforce/campaigns/cyberpunk-2077/slider/geforce-cp2077-phantom-liberty-slider-rtx-on-2560.jpg",
-    cover: "https://assetsio.gnwcdn.com/coaih8.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webp",
-    screenshots: [
-        "https://cdn2.unrealengine.com/cyberpunk-2077-3840x2160-b719b02e9cf3.jpg",
-        "https://assetsio.gnwcdn.com/cyberpunk-red-rulebook-artwork.png?width=690&quality=85&format=jpg&dpr=3&auto=webp",
-        "https://static.cdprojektred.com/cms.cdprojektred.com/16x9_big/872822c5e50dc71f345416098d29fc3ae5cd26c1-1280x720.jpg",
-        "https://assetsio.gnwcdn.com/cyberpunk-red-rpg-%20artwork.png?width=690&quality=85&format=jpg&dpr=3&auto=webp"
-    ]
-}
+export default function GamePage() {
+    const params = useParams()
+    const slug = params.slug as string
 
-export default function GamePage({ params }: { params: { slug: string } }) {
+    const { data: game, isLoading, error } = useGameBySlug(slug)
+
+    if (isLoading) {
+        return (
+            <div className="bg-[#050505] min-h-screen flex flex-col items-center justify-center text-white">
+                <Loader2 className="h-12 w-12 animate-spin text-[#ff2e2e] mb-4" />
+                <p className="text-gray-400 animate-pulse">Загружаем данные из Зоны...</p>
+            </div>
+        )
+    }
+
+    if (error || !game) {
+        return (
+            <div className="bg-[#050505] min-h-screen flex flex-col items-center justify-center text-white px-4 text-center">
+                <AlertCircle className="h-16 w-16 text-gray-700 mb-6" />
+                <h1 className="text-3xl font-black uppercase mb-2">Игра не найдена</h1>
+                <p className="text-gray-400 mb-8 max-w-md">
+                    Похоже, данный слаг ведет в тупик. Возможно, игра была удалена или вы ошиблись в адресе.
+                </p>
+                <Button asChild className="bg-[#ff2e2e] hover:bg-[#d61e1e]">
+                    <Link href="/games">Вернуться в каталог</Link>
+                </Button>
+            </div>
+        )
+    }
+
     return (
         <div className="bg-[#050505] min-h-screen text-white">
             <main>
-                <GameHero game={gameData} />
-
+                <GameHero game={game} />
                 <div className="container mx-auto px-4 py-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                        {/* Левая колонка */}
                         <div className="lg:col-span-8">
-                            <GameContent game={gameData} />
+                            <GameContent game={game} />
                         </div>
-                        {/* Правая колонка (Сайдбар) */}
                         <div className="lg:col-span-4">
-                            <GameSidebar game={gameData} />
+                            <GameSidebar game={game} />
                         </div>
                     </div>
                 </div>

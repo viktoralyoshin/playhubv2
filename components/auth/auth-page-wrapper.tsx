@@ -2,7 +2,7 @@
 
 import React from "react"
 import { motion } from "framer-motion"
-import { AuthForm } from "@/components/auth/auth-form"
+import AuthForm from "./auth-form"
 
 export function AuthPageWrapper() {
     return (
@@ -16,7 +16,7 @@ export function AuthPageWrapper() {
                     Добро пожаловать
                 </h1>
                 <p className="text-sm text-gray-400">
-                    Войдите в систему, чтобы управлять бэклогом и оценивать игры
+                    Войдите в систему, чтобы управлять библиотекой и оценивать игры
                 </p>
             </div>
 
